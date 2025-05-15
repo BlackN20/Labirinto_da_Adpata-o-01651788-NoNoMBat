@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Multiagente Q-Learning Maze</title>
+  <style>
+    body {
+      background: #1e1e1e;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      text-align: center;
+    }
+
+    canvas {
+      background: #f0f0f0;
+      margin-bottom: 20px;
+      border: 2px solid #7f5af0;
+    }
+
+    button, label, input {
+      margin: 5px;
+      font-size: 14px;
+    }
+
+    button {
+      background-color: #7f5af0;
+      border: none;
+      padding: 10px 15px;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: #5a3db8;
+    }
+
+    label {
+      margin: 0 10px;
+    }
+
+    input[type="number"] {
+      width: 60px;
+    }
+
+    #episodeCounter {
+      display: inline-block;
+      margin-left: 15px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Q-Learning com Múltiplos Agentes</h1>
+
+  <canvas id="mazeCanvas" width="500" height="500"></canvas>
+
+  <div>
+    <button onclick="startTraining()">Iniciar Treino</button>
+    <button onclick="pauseTraining()">Pausar</button>
+    <button onclick="resumeTraining()">Continuar</button>
+    <button onclick="stepTraining()">Passo a Passo</button>
+    <button onclick="resetMaze(true)">Resetar Labirinto</button>
+    <button onclick="togglePolicy()">Mostrar/Ocultar Política</button>
+    <button onclick="saveQTable()">Salvar Q-Table</button>
+    <button onclick="loadQTable()">Carregar Q-Table</button>
+    <button onclick="openQTableInNewTab()">Visualizar Q-Table</button>
+    <span id="episodeCounter">Episódio: 0</span>
+  </div>
+
+  <div style="margin-top: 10px;">
+    <label>Alpha: <input type="number" id="alpha" min="0" max="1" step="0.01" value="0.1"></label>
+    <label>Gamma: <input type="number" id="gamma" min="0" max="1" step="0.01" value="0.9"></label>
+    <label>Epsilon: <input type="number" id="epsilon" min="0" max="1" step="0.01" value="0.5"></label>
+  </div>
+
+  <h3>Recompensa por Episódio</h3>
+  <canvas id="rewardChart" width="600" height="200" style="border:1px solid #ccc;"></canvas>
+
+  <script src="qlearning.js"></script>
+  <script>
+    // Histórico de recompensas por episódio
+    const rewardHistory = [];
+
+    // Atualiza o gráfico de recompensas
+    function updateRewardChart() {
+      const canvas = document.getElementById("rewardChart");
+      const ctx = canvas.getContext("2d");
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const maxReward = Math.max(...rewardHistory, 1); // evita divisão por 0
+      const stepX = canvas.width / rewardHistory.length;
+
+      ctx.beginPath();
+      ctx.moveTo(0, canvas.height - (rewardHistory[0] / maxReward) * canvas.height);
+
+      for (let i = 1; i < rewardHistory.length; i++) {
+        const x = i * stepX;
+        const y = canvas.height - (rewardHistory[i] / maxReward) * canvas.height;
+        ctx.lineTo(x, y);
+      }
+
+      ctx.strokeStyle = "#00ff88";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    // Expõe rewardHistory globalmente para uso em qlearning.js
+    window.rewardHistory = rewardHistory;
+    window.updateRewardChart = updateRewardChart;
+  </script>
+</body>
+</html>
