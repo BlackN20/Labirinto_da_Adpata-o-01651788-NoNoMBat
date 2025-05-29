@@ -1,3 +1,4 @@
+// Alterado para treinamento mais eficaz
 const canvas = document.getElementById('mazeCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -6,7 +7,7 @@ const cols = 10;
 const cellSize = canvas.width / cols;
 
 const numAgents = 3;
-const episodes = 500;
+const episodes = 5000; // Aumentado para permitir mais aprendizado
 
 let alpha, gamma, epsilon;
 
@@ -16,12 +17,15 @@ let Q = {};
 let episode = 0;
 let trainingInterval = null;
 let showPolicy = false;
-let winnerAgentIndex = null;
 
+// Labirinto fixo para aprendizado consistente
 function generateMaze() {
   maze = Array.from({ length: rows }, () =>
-    Array.from({ length: cols }, () => (Math.random() < 0.2 ? 1 : 0))
+    Array.from({ length: cols }, () => 0)
   );
+  for (let i = 1; i < 9; i++) maze[5][i] = 1;
+  for (let i = 1; i < 6; i++) maze[i][3] = 1;
+  for (let i = 1; i < 6; i++) maze[i][3] = 1;
   maze[0][0] = 0;
   maze[rows - 1][cols - 1] = 0;
 }
@@ -73,6 +77,8 @@ function resetMaze(preserveQ = false) {
   updateParams();
   document.getElementById('episodeCounter').textContent = 'Episódio: 0';
   if (trainingInterval) clearInterval(trainingInterval);
+  window.rewardHistory.length = 0;
+  window.updateRewardChart();
 }
 
 function updateParams() {
@@ -82,8 +88,7 @@ function updateParams() {
 }
 
 function initializeAgents() {
-  agents = Array.from({ length: numAgents }, () => ({ x: 0, y: 0, finished: false }));
-  winnerAgentIndex = null;
+  agents = Array.from({ length: numAgents }, () => ({ x: 0, y: 0 }));
 }
 
 function getState(x, y) {
@@ -105,8 +110,18 @@ function takeAction(x, y, action) {
   else if (action === 1 && y < rows - 1) ny++;
   else if (action === 2 && x > 0) nx--;
   else if (action === 3 && x < cols - 1) nx++;
-  if (maze[ny][nx] === 1) return [x, y];
-  return [nx, ny];
+
+  if (maze[ny][nx] === 1) {
+    return [x, y, -10]; // penalidade maior por bater na parede
+  }
+
+  const goalX = cols - 1;
+  const goalY = rows - 1;
+  const distBefore = Math.abs(x - goalX) + Math.abs(y - goalY);
+  const distAfter = Math.abs(nx - goalX) + Math.abs(ny - goalY);
+  const progress = distBefore - distAfter;
+
+  return [nx, ny, -1 + progress];
 }
 
 function updateQTable(x, y, action, reward, nx, ny) {
@@ -121,38 +136,36 @@ function updateQTable(x, y, action, reward, nx, ny) {
 }
 
 function trainStep() {
-  let finishedCount = 0;
+  let episodeReward = 0;
 
   for (let a = 0; a < numAgents; a++) {
     let agent = agents[a];
-    if (agent.finished) {
-      finishedCount++;
-      continue;
-    }
-
     const action = chooseAction(agent.x, agent.y);
-    const [nx, ny] = takeAction(agent.x, agent.y, action);
+    const [nx, ny, reward] = takeAction(agent.x, agent.y, action);
 
-    let reward = -1;
+    let done = false;
     if (nx === cols - 1 && ny === rows - 1) {
-      if (winnerAgentIndex === null) {
-        winnerAgentIndex = a;
-        reward = 100;
-      } else {
-        reward = 1;
-      }
-      agent.finished = true;
-      finishedCount++;
+      updateQTable(agent.x, agent.y, action, 100, nx, ny);
+      episodeReward += 100;
+      done = true;
+    } else {
+      updateQTable(agent.x, agent.y, action, reward, nx, ny);
+      episodeReward += reward;
     }
 
-    updateQTable(agent.x, agent.y, action, reward, nx, ny);
-    agent.x = nx;
-    agent.y = ny;
+    agent.x = done ? 0 : nx;
+    agent.y = done ? 0 : ny;
   }
 
   episode++;
+  epsilon *= 0.999; // decaimento mais lento
+  epsilon = Math.max(epsilon, 0.05);
+
   document.getElementById('episodeCounter').textContent = `Episódio: ${episode}`;
-  if (finishedCount === numAgents) initializeAgents();
+  window.rewardHistory.push(episodeReward);
+  if (window.rewardHistory.length > 200) window.rewardHistory.shift();
+  window.updateRewardChart();
+
   drawMaze();
 
   if (episode >= episodes) {
@@ -164,7 +177,7 @@ function trainStep() {
 function startTraining() {
   updateParams();
   if (trainingInterval) clearInterval(trainingInterval);
-  trainingInterval = setInterval(trainStep, 300);
+  trainingInterval = setInterval(trainStep, 50);
 }
 
 function pauseTraining() {
@@ -173,7 +186,7 @@ function pauseTraining() {
 
 function resumeTraining() {
   if (!trainingInterval) {
-    trainingInterval = setInterval(trainStep, 300);
+    trainingInterval = setInterval(trainStep, 50);
   }
 }
 
