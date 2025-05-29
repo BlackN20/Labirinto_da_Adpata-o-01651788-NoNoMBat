@@ -1,96 +1,49 @@
-# Labirinto com Agentes Simultâneos e Q-Learning
-
-## 1. Introdução
-
-Este projeto tem como objetivo demonstrar a aplicação de conceitos de **Aprendizado por Reforço (Reinforcement Learning)** em um ambiente de labirinto. Utilizamos o algoritmo **Q-Learning** para treinar múltiplos agentes, que operam de forma simultânea, para encontrar a saída de um labirinto gerado aleatoriamente. O sistema utiliza uma estratégia **ε-greedy** para balancear a exploração versus a exploração, atualiza dinamicamente a Q-Table, ajusta a taxa de exploração ao longo do tempo, e aplica recompensas e penalidades para guiar o comportamento dos agentes.
-
-Ao final do treinamento, o desempenho dos agentes é visualizado por meio de um gráfico que ilustra a evolução da recompensa total por episódio.
-
-## 2. Estrutura do Projeto
-
-
-labirinto_da_adaptação/
-├── README.md
-├── requirements.txt
-└── labirinto_agentes_simultaneos.py
-
-
-## 3. Tecnologias e Bibliotecas Utilizadas
-
-- **Python 3.x**: Linguagem principal utilizada.
-- **pygame**: Criação da interface gráfica do labirinto e visualização dos movimentos dos agentes.
-- **numpy**: Criação e manipulação da Q-Table e cálculos numéricos.
-- **matplotlib**: Geração e exibição do gráfico que mostra a evolução das recompensas durante o treinamento.
-
-## 4. Algoritmo e Conceitos Aplicados
-
-### Q-Learning
-
-O algoritmo Q-Learning é implementado para que os agentes aprendam, por meio de tentativa e erro, qual a melhor ação a ser tomada em cada estado do ambiente. A atualização da Q-Table segue a fórmula:
-
-
-Q(s, a) = Q(s, a) + α * (reward + γ * max(Q(s', a')) - Q(s, a))
-
-
-Onde:
-- **α (learning_rate)**: Taxa de aprendizado.
-- **γ (discount_factor)**: Fator de desconto para recompensas futuras.
-- **reward**: Recompensa recebida após executar uma ação.
-- **s'**: Próximo estado.
-
-### Conteúdo Mínimo Obrigatório
-
-1. **Redução de Incertezas (Exploração vs. Exploração):**
-   Utilizamos a estratégia ε-greedy para balancear ações exploratórias (ação aleatória) e ações exploratórias (escolher a ação com maior valor na Q-Table).
-
-2. **Atualização Dinâmica de Aprendizado (Q-Table):**
-   A Q-Table é atualizada a cada interação entre o agente e o ambiente, incorporando as recompensas obtidas para melhorar o aprendizado.
-
-3. **Ajuste de Taxa de Exploração:**
-   A taxa de exploração (ε) inicia alta e decai a cada episódio, permitindo maior exploração no início e mais exploração do conhecimento adquirido conforme o treinamento progride.
-
-4. **Aplicação de Recompensa e Penalidade:**
-   São aplicadas recompensas positivas quando o agente alcança a saída e penalidades (pequeno custo por movimento) para estimular trajetórias mais curtas e eficientes.
-
-5. **Visualização de Métricas/Comportamento Aprendido:**
-   Ao final do treinamento, um gráfico é gerado com o `matplotlib`, mostrando a evolução das recompensas totais por episódio para cada agente.
-
-## 5. Cálculos e Parâmetros
-
-- **learning_rate (α):** Influencia o quanto a nova informação substitui o valor antigo na Q-Table.
-- **discount_factor (γ):** Define a importância das futuras recompensas frente à recompensa imediata.
-- **ε (epsilon):** Taxa de exploração inicial, que decai a cada episódio (por meio do ε_decay) para favorecer ações mais otimizadas.
-
-## 6. Como Treinar e Testar o Agente
-
-### Pré-requisitos
-
-- Instale as dependências utilizando o arquivo `requirements.txt`:
-  ```bash
-  pip install -r requirements.txt
-
-Execução
-
-Para iniciar o treinamento dos agentes no labirinto com interface gráfica, execute:
-python labirinto_da_adptação.py
-
-
-Durante o treinamento, a janela do labirinto exibirá os agentes se movimentando de forma simultânea. Ao final do treinamento, um gráfico será exibido mostrando a evolução das recompensas obtidas em cada episódio.
-
-7. Dificuldades Encontradas
-
-Balanceamento de Exploração vs. Exploração: Ajustar a taxa de exploração para que os agentes explorem o ambiente inicialmente e, conforme o treinamento, converjam para as melhores ações.
-
-Sincronização dos Agentes: Implementar um loop que permita aos agentes operarem simultaneamente, garantindo atualização individual sem interferência mútua.
-
-Interface Gráfica: Desenvolver uma interface visual atrativa e responsiva utilizando pygame para exibir o labirinto e o movimento dos agentes.
-
-8. Resultados Obtidos
-
-Gráfico de Evolução: Ao final do treinamento, um gráfico mostra a evolução da recompensa total por episódio para cada agente. Esse gráfico permite visualizar se os agentes estão convergindo para um comportamento ótimo de navegação pelo labirinto.
-
-Comportamento dos Agentes: Os agentes aprendem a minimizar movimentos desnecessários, buscando ativamente a saída do labirinto e, assim, atingindo melhores recompensas.
-
-Desenvolvido por: Victor Hugo Coriolano Borges
-Matrícula: 01651788
-Data de Criação: 13/05/2025
+Apresentação do Projeto: Q-Learning com Múltiplos Agentes
+Objetivo do Projeto
+Apresentar uma simulacao de aprendizado por reforco (Q-Learning) com multiplos agentes em um labirinto.
+O objetivo dos agentes e alcancar a meta (canto inferior direito) da forma mais eficiente possivel.
+O que e Q-Learning?
+Q-Learning e um algoritmo de aprendizado por reforco onde agentes aprendem por tentativa e erro.
+- Q-Table: Mapeia estados para acoes com valores de recompensa esperada.
+- Formula de atualizacao:
+ Q(s, a) = Q(s, a) + a * (r + g * max(Q(s', a')) - Q(s, a))
+ - a (alpha): taxa de aprendizado
+ - g (gamma): fator de desconto
+ - e (epsilon): taxa de exploracao
+Detalhes do Codigo
+1. Canvas e Desenho:
+- Usado <canvas> HTML para desenhar o labirinto.
+- Celulas pretas = obstaculos. Agentes = circulos coloridos.
+2. Estrutura do Labirinto:
+- Tamanho 10x10 com obstaculos fixos e mais dificeis.
+- Ponto inicial: canto superior esquerdo.
+- Objetivo: canto inferior direito.
+3. Agentes:
+- 3 agentes treinando simultaneamente.
+- Cada agente aprende individualmente.
+- O primeiro a chegar ganha mais recompensa.
+4. Treinamento:
+- 5000 episodios, atualizando Q-Table a cada passo.
+Apresentação do Projeto: Q-Learning com Múltiplos Agentes
+- Controle de taxa de exploracao (e) e aprendizado (a).
+- E possivel pausar, retomar, salvar e carregar o Q-Table.
+Visualizacoes
+- Mostra a politica aprendida com setas (setas direcionais).
+- Grafico de recompensas por episodio.
+- Exibicao completa da Q-Table em nova aba.
+Funcionalidades Extras
+- Salvar e carregar Q-Table no navegador.
+- Reset geral com reinicio do aprendizado.
+- Exibir a politica aprendida.
+- Controle de treinamento passo a passo, pausado ou continuo.
+Demonstracao Sugerida
+1. Explicar os conceitos brevemente.
+2. Iniciar o treinamento.
+3. Mostrar agentes se movendo e aprendendo.
+4. Ativar a exibicao da politica aprendida.
+5. Abrir a Q-Table.
+6. Demonstrar controle de pausa e retomada.
+Conclusao
+Este projeto demonstra como agentes autonomos podem aprender estrategias eficientes por meio de
+tentativa e erro. Mesmo sem conhecimento previo, eles encontram o melhor caminho com o tempo, mesmo
+em um ambiente desafiador.
